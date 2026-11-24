@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TDE 08 - CRUD de Pacientes</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f6f7f9; color: #20242a; font: 15px Arial, sans-serif; }
+    main { max-width: 1050px; margin: 32px auto; padding: 0 16px; }
+    h1 { margin-bottom: 8px; }
+    h2 { margin-top: 0; font-size: 20px; }
+    .descricao { margin: 0 0 20px; color: #535b64; }
+    section { margin: 18px 0; padding: 20px; border: 1px solid #dfe4e8; border-radius: 8px; background: white; }
+    .campos { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+    .campo label { display: block; font-weight: bold; margin-bottom: 6px; }
+    input, select { width: 100%; padding: 9px; border: 1px solid #b8c0c8; border-radius: 4px; font: inherit; background: white; }
+    fieldset { margin: 16px 0 0; padding: 12px; border: 1px solid #dfe4e8; border-radius: 4px; }
+    legend { padding: 0 4px; font-weight: bold; }
+    .opcoes { display: flex; flex-wrap: wrap; gap: 10px 18px; }
+    .opcao { display: flex; align-items: center; gap: 5px; }
+    .opcao input { width: auto; }
+    .acoes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+    button { border: 1px solid #a5adb5; border-radius: 4px; padding: 9px 14px; font: inherit; cursor: pointer; background: white; }
+    button:hover:enabled { background: #eef2f5; }
+    button:disabled { cursor: not-allowed; opacity: .55; }
+    button.principal { background: #2057a7; color: white; border-color: #2057a7; }
+    button.principal:hover:enabled { background: #184686; }
+    .mensagem { min-height: 22px; margin: 12px 0; color: #285b38; }
+    .mensagem.erro { color: #a12020; }
+    .tabela-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border-bottom: 1px solid #e0e5e9; padding: 10px 8px; text-align: left; vertical-align: middle; }
+    th { background: #f2f4f6; }
+    td.acoes-tabela { white-space: nowrap; }
+    td.acoes-tabela button { padding: 6px 10px; margin-right: 5px; }
+    .nota { font-size: 13px; color: #5b636c; margin-top: 16px; }
+  </style>
+  <script src="PacienteApi.js" defer></script>
+  <script src="PacienteCtrl.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>Cadastro de Pacientes</h1>
+    <p class="descricao">TDE #08 — Interface integrada ao WebService REST de pacientes.</p>
+
+    <section aria-labelledby="form-titulo">
+      <h2 id="form-titulo">Novo paciente</h2>
+      <form id="paciente-form">
+        <input type="hidden" id="paciente-id">
+        <div class="campos">
+          <div class="campo">
+            <label for="tipo-sanguineo">Tipo sanguíneo *</label>
+            <select id="tipo-sanguineo" required>
+              <option value="">Selecione</option>
+              <option value="A+">A+</option><option value="A-">A-</option>
+              <option value="B+">B+</option><option value="B-">B-</option>
+              <option value="AB+">AB+</option><option value="AB-">AB-</option>
+              <option value="O+">O+</option><option value="O-">O-</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label for="numero-sus">Número do SUS *</label>
+            <input id="numero-sus" type="text" inputmode="numeric" maxlength="14" minlength="14" pattern="[0-9]{14}" title="Informe exatamente 14 dígitos" placeholder="14 dígitos" required>
+          </div>
+          <div class="campo">
+            <label for="plano-id">Plano *</label>
+            <select id="plano-id" required disabled><option value="">Carregando...</option></select>
+          </div>
+          <div class="campo">
+            <label for="registro-pessoa-id">Registro da pessoa *</label>
+            <select id="registro-pessoa-id" required disabled><option value="">Carregando...</option></select>
+          </div>
+          <div class="campo">
+            <label for="usuario-id">Usuário cadastrante *</label>
+            <select id="usuario-id" required disabled><option value="">Carregando...</option></select>
+          </div>
+        </div>
+
+        <fieldset>
+          <legend>Consultas vinculadas (opcional)</legend>
+          <div class="opcoes" id="consultas-opcoes">Carregando...</div>
+        </fieldset>
+        <fieldset>
+          <legend>Aplicações de dose vinculadas (opcional)</legend>
+          <div class="opcoes" id="aplicacoes-opcoes">Carregando...</div>
+        </fieldset>
+
+        <div class="acoes">
+          <button type="submit" id="salvar-btn" class="principal" disabled>Cadastrar paciente</button>
+          <button type="button" id="cancelar-btn" hidden>Cancelar edição</button>
+        </div>
+      </form>
+    </section>
+
+    <p id="mensagem" class="mensagem" role="status" aria-live="polite"></p>
+
+    <section aria-labelledby="lista-titulo">
+      <h2 id="lista-titulo">Pacientes cadastrados</h2>
+      <button type="button" id="atualizar-btn">Atualizar lista</button>
+      <div class="tabela-container">
+        <table>
+          <thead>
+            <tr><th>ID</th><th>Nº SUS</th><th>Tipo sanguíneo</th><th>Plano</th><th>Registro</th><th>Usuário</th><th>Consultas</th><th>Doses</th><th>Ações</th></tr>
+          </thead>
+          <tbody id="pacientes-corpo"><tr><td colspan="9">Carregando pacientes...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+    <p class="nota">A página não armazena dados no navegador. As operações dependem dos endpoints REST, implementados no TDE #08.</p>
+  </main>
+</body>
+</html>
