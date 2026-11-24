@@ -1,5 +1,8 @@
 # TDE 08 — WebService REST de Pacientes
 
+## RUAN CORREIA
+## BERNARDO CEZAR
+
 ## Objetivo
 
 Implementar as operações CRUD da classe `Paciente` inspecionada no trabalho anterior, com Spring Boot, Spring Data JPA e uma API REST. A interface HTML/JavaScript do TDE 07 foi reaproveitada para testar as operações pelo navegador.
